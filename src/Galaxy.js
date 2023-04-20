@@ -1,15 +1,20 @@
-import { useContext, useEffect, useRef } from "react";
+import { Suspense, useContext, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import galaxytVertexShader from './Shader/Galaxy/vertex.js';
 import galaxyFragmentShader from './Shader/Galaxy/fragment.js';
 import { useFrame, useThree } from '@react-three/fiber'
 import { useControls } from 'leva';
 import { ThreeContext } from "./Context.js";
+import { PivotControls } from "@react-three/drei";
+
+import { useSpring } from "@react-spring/core";
+import { a } from "@react-spring/three";
 
 
 export default function Galaxy({Gposition, Grotation, stencil}){
 
-    const {debug} = useContext(ThreeContext);
+    const {debug} = useContext(ThreeContext);   
+
 
      // Debug With Leva
      const Gparameters = useControls("Galaxy",
@@ -38,7 +43,6 @@ export default function Galaxy({Gposition, Grotation, stencil}){
      useFrame((state, delta) => {
         shaderRef.current.uniforms.uTime.value += delta;
         GalaxyRef.current.rotation.y += 0.1 * delta; // increment rotation angle
-
     })
 
   
@@ -91,40 +95,73 @@ export default function Galaxy({Gposition, Grotation, stencil}){
         scalesStar[i] = Math.random();
     }
 
+    const [isAnimating, setIsAnimating] = useState(true);
+    const delayRef = useRef(1000);
+    const { scale, rotation } = useSpring({
+        from: { scale: 0, rotation : GalaxyRef?.current?.rotation?.y || 0},
+        to: { scale: isAnimating ? 1 : 0, rotation: isAnimating ? Math.PI * 2 : 0},
+        config: { mass: 5, tension: 400, friction: 50, precision: 0.01 },
+        delay: delayRef.current,
+        //onRest: () => setIsAnimating(false) // Réinitialiser l'état de l'animation une fois terminée
+      });
 
+      const hoverGalaxy = (e) =>  {
+        setIsAnimating(false)
+        setTimeout(() => {
+            setIsAnimating(true)
+        }, 1000)
+      }
 
+      useEffect(() => {
+        setIsAnimating(true);
+        delayRef.current = 0;
+      }, []); // Jouer l'animation une seule fois au démarrage de l'application
+    
 
     return(
-        <group ref={GalaxyRef} position={Gposition} rotation={[Gparameters.Grotation.x, Gparameters.Grotation.y, Gparameters.Grotation.z]}>
-            <mesh>
-                <sphereGeometry args={[Gparameters.radius / 10]}/>
-                <meshBasicMaterial color="#000000"/>
-            </mesh>           
+        <>
+        
+            {/* SPACE BLACK */}
+            <PivotControls anchor={[0, 0, 0]} activeAxes={[true, true, true]}  visible={debug} depthTest={false}> 
+                <mesh position={[0,5.25,-6]} rotation={[0,Math.PI ,0]}>
+                <sphereGeometry attach="geometry" args={[3, 5, 5, 0, Math.PI]} />
+                <meshBasicMaterial attach="material" color="black" side={THREE.DoubleSide}  {...stencil}/>
+                </mesh>
+            </PivotControls> 
 
-            <points key={Math.random()}>
-                <bufferGeometry>
-                    <bufferAttribute attach="attributes-position" args={[positionsGalaxy, 3]} />
-                    <bufferAttribute attach="attributes-color" args={[colorsGalaxy, 3]} />
-                    <bufferAttribute attach="attributes-aScale" args={[scalesStar ,1]} />
-                    <bufferAttribute attach="attributes-aRandom" args={[positionsRandomGalaxy, 3]} />
-                </bufferGeometry>
-                <shaderMaterial 
-                    ref={shaderRef}
-                    vertexShader={galaxytVertexShader}
-                    fragmentShader={galaxyFragmentShader}
-                    vertexColors={true}
-                    blending={THREE.AdditiveBlending}
-                    depthWrite={false}
-                    uniforms={
-                        {                        
-                            uTime : { value : 0 },
-                            uSize : { value : Gparameters.Brightness * gl.getPixelRatio() },
-                            uSpeed : { value : Gparameters.speed}
-                        }
-                    }
-                    {...stencil}
-                />
-            </points>          
-        </group>
+            <Suspense>
+                <a.group  scale={scale} rotation-y={rotation} ref={GalaxyRef} position={Gposition} rotation={[Gparameters.Grotation.x, Gparameters.Grotation.y, Gparameters.Grotation.z]}>
+                    <mesh onClick={(e) => hoverGalaxy(e)} onPointerEnter={() => document.body.style.cursor = 'pointer'} onPointerLeave={() => document.body.style.cursor = 'default'}>
+                        <sphereGeometry args={[Gparameters.radius / 10]}/>
+                        <meshBasicMaterial color="#000000" {...stencil}/>
+                    </mesh>           
+
+                    <points key={Math.random()}>
+                        <bufferGeometry>
+                            <bufferAttribute attach="attributes-position" args={[positionsGalaxy, 3]} />
+                            <bufferAttribute attach="attributes-color" args={[colorsGalaxy, 3]} />
+                            <bufferAttribute attach="attributes-aScale" args={[scalesStar ,1]} />
+                            <bufferAttribute attach="attributes-aRandom" args={[positionsRandomGalaxy, 3]} />
+                        </bufferGeometry>
+                        <shaderMaterial 
+                            ref={shaderRef}
+                            vertexShader={galaxytVertexShader}
+                            fragmentShader={galaxyFragmentShader}
+                            vertexColors={true}
+                            blending={THREE.AdditiveBlending}
+                            depthWrite={false}
+                            uniforms={
+                                {                        
+                                    uTime : { value : 0 },
+                                    uSize : { value : Gparameters.Brightness * gl.getPixelRatio() },
+                                    uSpeed : { value : Gparameters.speed}
+                                }
+                            }
+                            {...stencil}
+                        />
+                    </points>          
+                </a.group>
+            </Suspense>            
+        </>
     )
 }

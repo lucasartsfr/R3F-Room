@@ -23,6 +23,8 @@ const GrassMaterial = shaderMaterial(
     uFogFar : 50.0,
     uFogColor : new THREE.Color(1.0, 0.0, 0.0).convertSRGBToLinear(),
     uUnderWaterHeight : 1.0,
+    uPosition : new THREE.Vector3(0.0, 0.0, 0.0),
+    uIsCenterHole : true,
   },
   `   
       #include <fog_pars_vertex>
@@ -149,6 +151,10 @@ const GrassMaterial = shaderMaterial(
       uniform bool uUnderWater;
       uniform float uUnderWaterHeight;
 
+      uniform bool uIsCenterHole;
+
+      uniform vec3 uPosition;
+
       uniform float uFogNear;
       uniform float uFogFar;
       uniform vec3 uFogColor;
@@ -188,16 +194,20 @@ const GrassMaterial = shaderMaterial(
           col = mix(vec4(bottomColor, 1.0), col, frc);     
           
           // Shape as Circle || Hole as Circle
-          float len = length(pos);
+          vec3 updatePose = vec3(pos.x - uPosition.x, pos.y, pos.z - uPosition.z); // Hole at the Center Even if move
+          vec3 isCenter = (uIsCenterHole) ? updatePose : pos;
 
-          float square = max( abs(pos.x) * uSquareSize.x,  max( abs(pos.y), abs(pos.z) ) * uSquareSize.y );
+
+          float len = length(isCenter);  //length(updatePose);
+
+          float square = max( abs(isCenter.x) * uSquareSize.x,  max( abs(isCenter.y), abs(isCenter.z) ) * uSquareSize.y );
 
           if( (len > uRadius && uCircle) || (len < uHoleRadius && uHole && !uSquareHole) || (square < uHoleRadius && uHole && uSquareHole) )
             discard;
 
           // float alphaGrass = smoothstep(uUnderWaterHeight - 0.1, uUnderWaterHeight, pos.y);
-          // if( uUnderWater && (pos.y < uUnderWaterHeight))
-          //   discard;
+          if( uUnderWater && (pos.y < -50.0))
+            discard;
 
 
         //gl_FragColor = col;

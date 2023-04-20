@@ -17,9 +17,9 @@ export default function Sun({props}){
 
     const sun = useControls("Sun",
     {   
-      distance :  {value : 4500.0, step : 10, min : 100, max : 50000.0}, 
+      distance :  {value : 1000.0, step : 10, min : 1, max : 3000.0}, 
       sunPosition  : {
-        value : {x : -0.5, y : 0, z : -0.5},
+        value : {x : -1, y : 0, z : -0.1},
         step : 0.1
     },
       inclination :  {value : 25.0, step : 0.1, min : 1.0, max : 100.0},  
@@ -36,6 +36,9 @@ export default function Sun({props}){
     
 
     return(
-        <Sky ref={skyRef}  distance={sun.distance} sunPosition={[sun.sunPosition.x, sun.sunPosition.y, sun.sunPosition.z]} inclination={sun.inclination} elevation={sun.elevation} azimuth={sun.azimuth} exposure={sun.exposure} turbidity={sun.turbidity} rayleigh={sun.rayleigh} mieCoefficient={sun.mieCoefficient} mieDirectionalG={sun.mieDirectionalG} {...props} {...stencil} />
+      <>
+        <Sky ref={skyRef} distance={sun.distance} sunPosition={[sun.sunPosition.x, sun.sunPosition.y, sun.sunPosition.z]} inclination={sun.inclination} elevation={sun.elevation} azimuth={sun.azimuth} exposure={sun.exposure} turbidity={sun.turbidity} rayleigh={sun.rayleigh} mieCoefficient={sun.mieCoefficient} mieDirectionalG={sun.mieDirectionalG} {...props} 
+        />
+      </>
     )
 }

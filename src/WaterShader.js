@@ -52,25 +52,44 @@ export default function WaterShader({position}){
     })
 
      // Debug With Leva
-     const { uBigWavesElevation, uWavesFrequency, uWavesSpeed, uColorOffset, uColorMultiplier, uDetails, uSmallWavesElevation, uSmallWavesFrequency, uSallWavesSpeed, uDepthColor, uSurfaceColor, cSize, cSegment,
-    uRadius, uCircle, uHoleRadius, uHole, uSquareHole, uSquareSize } = useControls("Water",
+     const { 
+            uBigWavesElevation,
+            uWavesFrequency,
+            uWavesSpeed,
+            uColorOffset,
+            uColorMultiplier,
+            uDetails,
+            uSmallWavesElevation,
+            uSmallWavesFrequency,
+            uSallWavesSpeed,
+            uDepthColor,
+            uSurfaceColor,
+            cSize,
+            cSegment,
+            uRadius,
+            uCircle,
+            uHoleRadius,
+            uHole,
+            uSquareHole,
+            uSquareSize 
+        } = useControls("Water",
      {  
        uBigWavesElevation : {value : 0.1, step : 0.01, min : 0, max : 3},
        uWavesFrequency : {
-            value : {x : 2, y : 1},
+            value : {x : 1.0, y : 1.0},
             step : 0.1
         },
        uWavesSpeed : {value : 0.75, step : 0.01, min : -3, max : 3},
-       uColorOffset : {value : 0.25, step : 0.01, min : 0, max : 1},
-       uColorMultiplier : {value : 2.6, step : 0.01, min : 0, max : 5},
-       uDetails : {value : 3, step : 1, min : 0, max : 10},
-       uSmallWavesElevation : {value : 0.15, step : 0.01, min : 0, max : 3},
-       uSmallWavesFrequency : {value : 0.95, step : 0.01, min : 0, max : 10},
-       uSallWavesSpeed : {value : 0.2, step : 0.01, min : 0, max : 3},
+       uColorOffset : {value : 0.14, step : 0.01, min : 0, max : 1},
+       uColorMultiplier : {value : 4.0, step : 0.01, min : 0, max : 5},
+       uDetails : {value : 1, step : 1, min : 0, max : 10},
+       uSmallWavesElevation : {value : 0.34, step : 0.01, min : 0, max : 3},
+       uSmallWavesFrequency : {value : 0.28, step : 0.01, min : 0, max : 10},
+       uSallWavesSpeed : {value : 0.46, step : 0.01, min : 0, max : 3},
        uDepthColor : "#3da8ff",
-       uSurfaceColor : "#ebebeb",
+       uSurfaceColor : "#ffffff",
        cSize : {value : 80, step : 0.5, min : 0, max : 200},
-       cSegment : {value : 512, step : 2, min : 4, max : 2048},
+       cSegment : {value : 196, step : 2, min : 4, max : 2048},
        uCircle : false,
        uRadius : {value : 50.0, step : 0.1, min : 1.0, max : 100.0},        
        uHole : false,
@@ -110,7 +129,7 @@ export default function WaterShader({position}){
                 uFogFar={THR.scene.fog && THR.scene.fog.far}
                 uFogColor={THR.scene.fog && new THREE.Color(THR.scene.fog.color.r, THR.scene.fog.color.g, THR.scene.fog.color.b).convertSRGBToLinear()}
                 
-                //{...stencil}
+                {...stencil}
             />
         </mesh>
         </>
