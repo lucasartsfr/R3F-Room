@@ -1,10 +1,11 @@
 import * as THREE from 'three';
 import vertexShader from './Shader/SeaJS/vertex.js';
 import fragmentShader from './Shader/SeaJS/fragment.js';
-import { shaderMaterial, useMask } from '@react-three/drei';
+import { PivotControls, shaderMaterial, useMask } from '@react-three/drei';
 import { extend, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useRef } from 'react';
+import { useContext, useEffect, useRef } from 'react';
 import { button, useControls } from 'leva';
+import { ThreeContext } from './Context.js';
 
 const WaterMaterial = shaderMaterial(
     {
@@ -43,15 +44,7 @@ extend({ WaterMaterial })
 
 export default function WaterShader({position}){
 
-    const waterRef = useRef();
-    const THR = useThree();
-    const stencil = useMask(1);
-   
-    useFrame((state, delta) => {
-        waterRef.current.uTime += delta;
-    })
-
-     // Debug With Leva
+       // Debug With Leva
      const { 
             uBigWavesElevation,
             uWavesFrequency,
@@ -71,9 +64,11 @@ export default function WaterShader({position}){
             uHoleRadius,
             uHole,
             uSquareHole,
-            uSquareSize 
+            uSquareSize,
+            uWindowMask
         } = useControls("Water",
      {  
+       uWindowMask : { value : true},
        uBigWavesElevation : {value : 0.1, step : 0.01, min : 0, max : 3},
        uWavesFrequency : {
             value : {x : 1.0, y : 1.0},
@@ -101,8 +96,17 @@ export default function WaterShader({position}){
        uHoleRadius : {value : 16.0, step : 0.1, min : 1.0, max : 50.0},    
      })
 
+     const waterRef = useRef();
+     const THR = useThree();
+     const stencil = uWindowMask && useMask(1);
+     const {debug} = useContext(ThreeContext);
+    
+     useFrame((state, delta) => {
+         waterRef.current.uTime += delta;
+     })
+
     return(
-        <>
+        <PivotControls anchor={[0, 0, 0]} activeAxes={[true, true, true]}  visible={debug} depthTest={false}>
         <mesh position={position} rotation-x={- Math.PI / 2} transparent geometry={new THREE.PlaneGeometry(cSize, cSize, cSegment, cSegment)}>      
             <waterMaterial 
                 ref={waterRef}
@@ -132,6 +136,6 @@ export default function WaterShader({position}){
                 {...stencil}
             />
         </mesh>
-        </>
+        </PivotControls>  
     )
 }

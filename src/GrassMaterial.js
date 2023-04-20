@@ -29,7 +29,7 @@ const GrassMaterial = shaderMaterial(
   `   
       #include <fog_pars_vertex>
 
-      precision mediump float;
+      precision highp float;
       attribute vec3 offset;
       attribute vec4 orientation;
       attribute float halfRootAngleSin;
@@ -46,9 +46,33 @@ const GrassMaterial = shaderMaterial(
       varying vec3 vWorldPosition;
       
       //WEBGL-NOISE FROM https://github.com/stegu/webgl-noise
-      //Description : Array and textureless GLSL 2D simplex noise function. Author : Ian McEwan, Ashima Arts. Maintainer : stegu Lastmod : 20110822 (ijm) License : Copyright (C) 2011 Ashima Arts. All rights reserved. Distributed under the MIT License. See LICENSE file. https://github.com/ashima/webgl-noise https://github.com/stegu/webgl-noise      
-        vec3 mod289(vec3 x) {return x - floor(x * (1.0 / 289.0)) * 289.0;} vec2 mod289(vec2 x) {return x - floor(x * (1.0 / 289.0)) * 289.0;} vec3 permute(vec3 x) {return mod289(((x*34.0)+1.0)*x);} float snoise(vec2 v){const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439); vec2 i  = floor(v + dot(v, C.yy) ); vec2 x0 = v -   i + dot(i, C.xx); vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0); vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1; i = mod289(i); vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 )); vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0); m = m*m ; m = m*m ; vec3 x = 2.0 * fract(p * C.www) - 1.0; vec3 h = abs(x) - 0.5; vec3 ox = floor(x + 0.5); vec3 a0 = x - ox; m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h ); vec3 g; g.x  = a0.x  * x0.x  + h.x  * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw; return 130.0 * dot(m, g);}
-        //END NOISE
+
+        vec3 mod289(vec3 x) {return x - floor(x * (1.0 / 289.0)) * 289.0;} 
+        vec2 mod289(vec2 x) {return x - floor(x * (1.0 / 289.0)) * 289.0;} 
+        vec3 permute(vec3 x) {return mod289(((x*34.0)+1.0)*x);} 
+        
+        float snoise(vec2 v){          
+          const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);           
+          vec2 i  = floor(v + dot(v, C.yy) );         
+          vec2 x0 = v -   i + dot(i, C.xx); 
+          vec2 i1; 
+          i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0); 
+          vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+          i = mod289(i);
+          vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+          vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+          m = m*m ;
+          m = m*m ;
+          vec3 x = 2.0 * fract(p * C.www) - 1.0;
+          vec3 h = abs(x) - 0.5;
+          vec3 ox = floor(x + 0.5);
+          vec3 a0 = x - ox;
+          m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+          vec3 g;
+          g.x  = a0.x  * x0.x  + h.x  * x0.y;
+          g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+          return 130.0 * dot(m, g);
+        }
       
       //https://www.geeks3d.com/20141201/how-to-rotate-a-vertex-by-a-quaternion-in-glsl/
         vec3 rotateVectorByQuaternion( vec3 v, vec4 q){
@@ -101,7 +125,7 @@ const GrassMaterial = shaderMaterial(
           frc = position.y/float(bladeHeight);
         
         //Get wind data from simplex noise 
-          float noise = 1.0-(snoise(vec2((time-offset.x/50.0), (time-offset.z/50.0)))); 
+          float noise = 1.0 - (snoise(vec2((time-offset.x/50.0), (time-offset.z/50.0))));
 
         //Define the direction of an unbent blade of grass rotated around the Y axis
           vec4 direction = vec4(0.0, halfRootAngleSin, 0.0, halfRootAngleCos);
@@ -113,8 +137,9 @@ const GrassMaterial = shaderMaterial(
           vPosition = rotateVectorByQuaternion(vPosition, direction);
       
        //Apply wind
-        float halfAngle = noise * 0.15;
-        vPosition = rotateVectorByQuaternion(vPosition, normalize(vec4(sin(halfAngle), 0.0, -sin(halfAngle), cos(halfAngle))));
+        float halfAngle =  noise * 0.15 ;//noise * 0.15;
+        vPosition = rotateVectorByQuaternion(vPosition, normalize( vec4( sin(halfAngle), 0.0, -sin(halfAngle), cos(halfAngle) ) ) );
+      
 
         //UV for texture
          vUv = uv;
@@ -123,6 +148,7 @@ const GrassMaterial = shaderMaterial(
 
         //Calculate final position of the vertex from the world offset and the above shenanigans 
          gl_Position = projectionMatrix * modelViewMatrix * vec4(offset + vPosition, 1.0 );
+         
       }`,
 
 
@@ -136,7 +162,7 @@ const GrassMaterial = shaderMaterial(
 		  uniform float fogFar;
       uniform vec3 fogColor;
 
-      precision mediump float;
+      precision highp float;
 
       uniform sampler2D map;
       uniform sampler2D alphaMap;
@@ -196,15 +222,10 @@ const GrassMaterial = shaderMaterial(
           // Shape as Circle || Hole as Circle
           vec3 updatePose = vec3(pos.x - uPosition.x, pos.y, pos.z - uPosition.z); // Hole at the Center Even if move
           vec3 isCenter = (uIsCenterHole) ? updatePose : pos;
-
-
           float len = length(isCenter);  //length(updatePose);
-
           float square = max( abs(isCenter.x) * uSquareSize.x,  max( abs(isCenter.y), abs(isCenter.z) ) * uSquareSize.y );
-
           if( (len > uRadius && uCircle) || (len < uHoleRadius && uHole && !uSquareHole) || (square < uHoleRadius && uHole && uSquareHole) )
             discard;
-
           // float alphaGrass = smoothstep(uUnderWaterHeight - 0.1, uUnderWaterHeight, pos.y);
           if( uUnderWater && (pos.y < -50.0))
             discard;

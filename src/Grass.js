@@ -35,15 +35,11 @@ export default function Grass(
     IsCenterHole=true,
     streched=0.88,
     ...props 
-  }) {
+  }) { 
 
-
-  const stencil = stencilCheck && useMask(1);
-
-  const THR = useThree();
-
-  const {uRadius, uCircle, uInstances, uBH, uBW, uJoints, uWidthZ, uWidthX, uFlat, uHoleRadius, uHole, uSquareHole, uSquareSize, uSegment, uhillScale, uUnderWater, uUnderWaterHeight, uStreched } = useControls("Grass",
-     {        
+  const {uRadius, uCircle, uInstances, uBH, uBW, uJoints, uWidthZ, uWidthX, uFlat, uHoleRadius, uHole, uSquareHole, uSquareSize, uSegment, uhillScale, uUnderWater, uUnderWaterHeight, uStreched, uWindowMask } = useControls("Grass",
+     {          
+        uWindowMask : {value : true},
         uCircle : circle,
         uRadius : {value : 16.0, step : 0.1, min : 1.0, max : 30.0},        
         uHole : hole,
@@ -75,6 +71,10 @@ export default function Grass(
       uColorOffset : {value : 12.0, min : 0.0, max : 20.0, step : 0.01}
   })
 
+  const stencil = (stencilCheck && uWindowMask) && useMask(1);
+
+  const THR = useThree();
+
   
   const materialRef = useRef();
   const groundRed = useRef();
@@ -89,7 +89,10 @@ export default function Grass(
   const baseGeom = useMemo(() => new THREE.PlaneGeometry(uBW, uBH, 1, uJoints).translate(0, uBH / 2, 0), [uBH, uBW, uJoints])
 
  
-  useFrame((state) => (materialRef.current.uniforms.time.value = state.clock.elapsedTime / 4))
+  useFrame((state, delta) => (
+    materialRef.current.uniforms.time.value = state.clock.elapsedTime / 4
+    )
+  )
 
 
   // Ground
@@ -115,7 +118,7 @@ export default function Grass(
 
 
   return (
-    <group {...props} position={[position[0], position[1], position[2]] }  rotation={rotation}>
+    <group {...props} position={[position[0], position[1], position[2]] }  rotation={rotation} key={Math.random()}>
       <mesh frustumCulled={false}>
         <instancedBufferGeometry index={baseGeom.index} attributes-position={baseGeom.attributes.position} attributes-uv={baseGeom.attributes.uv}>
           <instancedBufferAttribute attach="attributes-offset" args={[new Float32Array(attributeData.offsets), 3]} />
@@ -130,6 +133,7 @@ export default function Grass(
           map={texture} 
           alphaMap={alphaMap} 
           toneMapped={false} 
+          
           uCircle={uCircle} 
           uRadius={uRadius}
           uHole={uHole}

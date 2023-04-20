@@ -1,11 +1,11 @@
 import { Canvas } from '@react-three/fiber'
 import { Leva } from 'leva'
 import Import from './Import'
-import React, { Suspense, useContext, useRef } from 'react';
+import React, { Suspense, useContext, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { ThreeContext } from './Context';
 import { Perf } from 'r3f-perf';
-import { OrbitControls } from '@react-three/drei';
+import { OrbitControls, PivotControls } from '@react-three/drei';
 import Background from './Background';
 import Effects from './Effects';
 import Placeholder from './Placeholder';
@@ -23,16 +23,34 @@ export default function App(){
         scene.fog = new THREE.Fog(Color, 0, 100000);
     }
 
-    const { debug } = useContext(ThreeContext);
+    const { debug, setDebug } = useContext(ThreeContext);
     const orbitRef = useRef();
 
     const limitPan = () =>{
-        // Limit Pan Camera
-        orbitRef.current.target.x = Math.max(orbitRef.current.minPan, Math.min(orbitRef.current.maxPan, orbitRef.current.target.x));
-        orbitRef.current.target.z = Math.max(orbitRef.current.minPan, Math.min(orbitRef.current.maxPan, orbitRef.current.target.z));
-        orbitRef.current.target.y = Math.max(1, Math.min(orbitRef.current.maxPan, orbitRef.current.target.y));
+        // Limit Pan Camera if no debug
+    
+        if(debug){
+            orbitRef.current.maxDistance = 300;
+            orbitRef.current.minDistance = 0;
+            orbitRef.current.minPolarAngle = 0;
+            orbitRef.current.maxPolarAngle = Infinity;
+            orbitRef.current.maxAzimuthAngle = Infinity 
+            orbitRef.current.minAzimuthAngle= Infinity; 
+        }
+        else{            
+            orbitRef.current.target.x = Math.max(orbitRef.current.minPan, Math.min(orbitRef.current.maxPan, orbitRef.current.target.x));
+            orbitRef.current.target.z = Math.max(orbitRef.current.minPan, Math.min(orbitRef.current.maxPan, orbitRef.current.target.z));
+            orbitRef.current.target.y = Math.max(1, Math.min(orbitRef.current.maxPan, orbitRef.current.target.y));
+            orbitRef.current.maxDistance = 30;
+            orbitRef.current.minDistance = 4;
+            orbitRef.current.minPolarAngle = Math.PI / 5;
+            orbitRef.current.maxPolarAngle = Math.PI / 2.2;
+            orbitRef.current.maxAzimuthAngle = Math.PI / 2 
+            orbitRef.current.minAzimuthAngle= -Math.PI / 6; 
+        }               
       }
     
+
 
     return(
         <>
@@ -62,6 +80,17 @@ export default function App(){
             />
 
                 {debug && <Perf position="top-left" minimal={false}/>}
+
+                <PivotControls anchor={[0, 0, 0]} activeAxes={[debug, debug, debug]}  visible={debug} depthTest={false}>
+                    <mesh position={[0.18,3.5,0.7]} 
+                        onClick={() => setDebug((prev) => !prev)}
+                        onPointerEnter={() => document.body.style.cursor = 'pointer'} 
+                        onPointerLeave={() => document.body.style.cursor = 'default'}
+                    >
+                        <boxGeometry args={[2.2,1.2,0.3]} />
+                        <meshBasicMaterial color="red" wireframe={debug} transparent opacity={debug ? 1 : 0}/>
+                    </mesh>
+                </PivotControls>
 
                 {/* Models */}
                 <Suspense fallback={<Placeholder position-y={3} scale={[9, 9, 9]} />}>

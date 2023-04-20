@@ -12,7 +12,7 @@ export const Context = ({ children }) => {
     },[])
 
     return (
-      <ThreeContext.Provider value={{debug}}>
+      <ThreeContext.Provider value={{debug, setDebug}}>
         {children}
       </ThreeContext.Provider>
     );

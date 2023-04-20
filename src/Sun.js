@@ -6,9 +6,6 @@ import { useEffect, useRef } from "react";
 
 export default function Sun({props}){
 
-    const stencil = useMask(1, false)
-    const skyRef = useRef();
-   
     useEffect(() =>{
       for(let key in stencil) {
         skyRef.current.material[key] = stencil[key]
@@ -17,6 +14,7 @@ export default function Sun({props}){
 
     const sun = useControls("Sun",
     {   
+      uMaskWindow : {value : true},
       distance :  {value : 1000.0, step : 10, min : 1, max : 3000.0}, 
       sunPosition  : {
         value : {x : -1, y : 0, z : -0.1},
@@ -32,6 +30,11 @@ export default function Sun({props}){
       mieCoefficient :  {value : 0.05, step : 0.01, min : 0.0, max : 0.1},  
       mieDirectionalG:  {value : 0.87, step : 0.01, min : 0.0, max : 1.0},   
     })
+
+    
+    const stencil = sun.uMaskWindow && useMask(1, false)
+    const skyRef = useRef();
+   
 
     
 

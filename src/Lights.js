@@ -14,7 +14,8 @@ export default function Lights(){
         lightRef.current.target.updateMatrixWorld();   
       }, [])
     
-      debug && useHelper(lightRef, THREE.DirectionalLightHelper, 0.2, "Cyan");
+    const HideLight = (debug) ? THREE.DirectionalLightHelper : THREE.PointLightHelper; 
+    useHelper(lightRef, HideLight, debug ? 0.2 : 0, "Cyan")
 
 
     return(
@@ -22,7 +23,7 @@ export default function Lights(){
             <ambientLight intensity={1.5} />
             <directionalLight ref={lightRef} intensity={1} position={[-5, 10, -5]} angle={Math.PI / 15}   />      
             <Sun />  
-            <Sparkles size={10} scale={15} radius={10} position={[0, 5, 0]} speed={5} intensity={1} count={10}/>   
+            <Sparkles key={Math.random()} size={10} scale={15} radius={10} position={[0, 5, 0]} speed={5} intensity={1} count={10}/>   
         </>
     )
 }

@@ -74,9 +74,9 @@ export default function Import({render}) {
 
 
       {/* WATER */}
-        <PivotControls anchor={[0, 0, 0]} activeAxes={[true, true, true]}  visible={debug} depthTest={false}>
-          <WaterShader position={[-46,0,-15]} />
-        </PivotControls>    
+        
+      <WaterShader position={[-46,0,-15]} />
+          
 
     </>
   )
