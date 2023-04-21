@@ -1,5 +1,5 @@
 import { PivotControls, useMask } from '@react-three/drei'
-import { EffectComposer, Noise, Vignette, HueSaturation, GodRays } from '@react-three/postprocessing'
+import { EffectComposer, Noise, Vignette, HueSaturation, GodRays, Bloom, DepthOfField, SMAA } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useControls } from 'leva'
@@ -73,6 +73,14 @@ export default function Effects() {
     color : "#ffffff"
   })
 
+  const { luminanceThreshold, luminanceSmoothing, radius, height, intensity} = useControls('Bloom', {
+    luminanceThreshold : {value : 0.95, min : 0, max : 1, step : 0.01},
+    luminanceSmoothing : {value : 0.88, min : 0, max : 1, step : 0.01},
+    radius : {value : 10, min : 0, max : 30, step : 0.1},
+    height : {value : 300, min : 0, max : 1000, step : 1},
+    intensity : {value : 0.5, min : 0, max : 1, step : 0.001},
+  })
+
   // const scene = useRef()
   // const { camera } = useThree()
   // useFrame(({ gl }) => void ((gl.autoClear = false), gl.clearDepth(), gl.render(scene.current, camera)), 10)
@@ -101,7 +109,14 @@ export default function Effects() {
       </mesh>
       </PivotControls>
 
-      <EffectComposer stencilBuffer multisampling={0} ref={composerRef}>
+      <EffectComposer stencilBuffer multisampling={0} ref={composerRef} autoClear disableNormalPass>
+        
+        {/* <DepthOfField
+          focusDistance={0} // where to focus
+          focalLength={0.2} // focal length
+          bokehScale={2} // bokeh size
+        /> */}
+       
         {
           (material) &&
           <GodRays
@@ -119,7 +134,19 @@ export default function Effects() {
             blur={true} // Whether the god rays should be blurred to reduce artifacts.
           />
         }
+         <Bloom 
+          luminanceThreshold={luminanceThreshold}
+          luminanceSmoothing={luminanceSmoothing}
+          radius={radius}
+          // height={height}
+          intensity={intensity}
+          width={Resizer.AUTO_SIZE} // render width
+          height={Resizer.AUTO_SIZE} // render height
+          kernelSize={KernelSize.LARGE} // blur kernel size
+        />
+
         
+        <SMAA />
       </EffectComposer>
     </>
   )

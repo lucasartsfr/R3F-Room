@@ -15,15 +15,15 @@ export default function App(){
     // Run When Canvas is Executed
     const Created = ({gl, scene}) => {
         const Color = "#ff0000";
-        //gl.setClearColor(Color); // Also possible on Scene   
+        // gl.setClearColor(Color); // Also possible on Scene   
         // gl.setClearColor(0x000000, 0);
-        //gl.antialias = true;
-        //gl.setClearAlpha(0.0)
-        //console.log(gl)
+        // gl.antialias = true;
+        // gl.setClearAlpha(0.0)
+        // console.log(gl)
         scene.fog = new THREE.Fog(Color, 0, 100000);
     }
 
-    const { debug, setDebug } = useContext(ThreeContext);
+    const { debug, setDebug, perf } = useContext(ThreeContext);
     const orbitRef = useRef();
 
     const limitPan = () =>{
@@ -79,7 +79,7 @@ export default function App(){
                 onChange={limitPan}
             />
 
-                {debug && <Perf position="top-left" minimal={false}/>}
+                {(debug || perf) && <Perf position="top-left" minimal={false}/>}
 
                 <PivotControls anchor={[0, 0, 0]} activeAxes={[debug, debug, debug]}  visible={debug} depthTest={false}>
                     <mesh position={[0.18,3.5,0.7]} 
