@@ -13,7 +13,7 @@ export default function Room({scale}) {
 
   return (
     <>        
-        <Environment preset="sunset" />
+        <Environment files="environmentMaps/venice_sunset_1k.hdr"/>
         <mesh 
             geometry={Model.nodes.Room.geometry} 
             position-y={7}
